@@ -1,0 +1,20 @@
+{
+  "name": "claude-traces",
+  "version": "1.0.0",
+  "description": "Claude Code conversation history viewer",
+  "main": "server.js",
+  "bin": {
+    "traces": "./cli.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

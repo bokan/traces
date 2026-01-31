@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traces</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            surface: {
+              0: '#0a0a0b',
+              1: '#111113',
+              2: '#18181b',
+              3: '#1f1f23',
+              4: '#26262b',
+            },
+            border: {
+              subtle: '#27272a',
+              default: '#3f3f46',
+            },
+            text: {
+              primary: '#fafafa',
+              secondary: '#a1a1aa',
+              muted: '#71717a',
+            },
+            accent: {
+              blue: '#3b82f6',
+              purple: '#8b5cf6',
+              green: '#22c55e',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; }
+
+    .scrollbar-thin::-webkit-scrollbar { width: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    pre, code { font-family: 'JetBrains Mono', monospace; }
+    pre code { font-size: 13px; line-height: 1.25; white-space: pre-wrap; word-break: break-word; }
+
+    .prose pre {
+      margin: 0.75rem 0;
+      border-radius: 6px;
+      background: #111113;
+      padding: 0.75rem 1rem;
+      border: 1px solid #1f1f23;
+    }
+    .prose code:not(pre code) {
+      background: #27272a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+      color: #d4d4d8;
+    }
+    .prose p { margin: 0.4rem 0; line-height: 1.5; }
+    .prose p:first-child { margin-top: 0; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose ul, .prose ol { margin: 0.4rem 0; padding-left: 1.25rem; }
+    .prose li { margin: 0.15rem 0; line-height: 1.5; }
+    .prose h1, .prose h2, .prose h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #fafafa;
+    }
+    .prose a { color: #60a5fa; text-decoration: none; }
+    .prose a:hover { text-decoration: underline; }
+    .prose strong { color: #fafafa; font-weight: 500; }
+    .prose table { margin: 0.75rem 0; font-size: 0.875em; }
+    .prose th, .prose td { padding: 0.25rem 0.75rem; }
+  </style>
+</head>
+<body class="bg-surface-0 text-text-secondary h-screen font-sans antialiased overflow-hidden">
+  <div id="root" class="h-full"></div>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
