@@ -150,7 +150,7 @@ app.get('/api/sessions/:projectId/:sessionId', (req, res) => {
 app.get('/api/sessions/:projectId/:sessionId/agents', (req, res) => {
   try {
     const projectDir = path.join(CLAUDE_DIR, req.params.projectId);
-    const subagentsDir = path.join(projectDir, 'subagents');
+    const subagentsDir = path.join(projectDir, req.params.sessionId, 'subagents');
 
     if (!fs.existsSync(subagentsDir)) {
       return res.json([]);
@@ -204,6 +204,7 @@ app.get('/api/sessions/:projectId/:sessionId/agents/:agentId', (req, res) => {
     const filePath = path.join(
       CLAUDE_DIR,
       req.params.projectId,
+      req.params.sessionId,
       'subagents',
       `agent-${req.params.agentId}.jsonl`
     );
