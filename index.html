@@ -37,8 +37,8 @@
             },
             text: {
               primary: '#fafafa',
-              secondary: '#a1a1aa',
-              muted: '#71717a',
+              secondary: '#b0b0b0',
+              muted: '#808080',
             },
             accent: {
               blue: '#3b82f6',
@@ -92,6 +92,12 @@
     .prose strong { color: #fafafa; font-weight: 500; }
     .prose table { margin: 0.75rem 0; font-size: 0.875em; }
     .prose th, .prose td { padding: 0.25rem 0.75rem; }
+
+    /* Scroll fade indicator */
+    .scroll-fade {
+      mask-image: linear-gradient(to bottom, black calc(100% - 2rem), transparent);
+      -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 2rem), transparent);
+    }
   </style>
 </head>
 <body class="bg-surface-0 text-text-secondary h-screen font-sans antialiased overflow-hidden">

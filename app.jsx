@@ -15,9 +15,10 @@ const formatDate = (dateStr) => {
   const d = new Date(dateStr);
   const now = new Date();
   const diff = now - d;
-  if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (diff < 604800000) return d.toLocaleDateString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const isToday = d.toDateString() === now.toDateString();
+  if (isToday) return `Today ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  if (diff < 604800000) return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 };
 
 const formatMarkdown = (text) => {
@@ -345,11 +346,12 @@ function TokenBadge({ usage }) {
   const tokens = formatTokens(usage);
   if (!tokens) return null;
   const fmt = (n) => n > 1000 ? `${(n / 1000).toFixed(1)}k` : n;
+  const tooltip = `${tokens.input.toLocaleString()} in / ${tokens.output.toLocaleString()} out${tokens.cached > 0 ? ` / ${tokens.cached.toLocaleString()} cached` : ''}`;
   return (
-    <span className="text-[10px] text-text-muted font-mono flex items-center gap-1.5">
-      <span className="text-green-500/70">↓{fmt(tokens.input)}</span>
-      <span className="text-blue-500/70">↑{fmt(tokens.output)}</span>
-      {tokens.cached > 0 && <span className="text-amber-500/60">⚡{fmt(tokens.cached)}</span>}
+    <span className="text-[10px] text-text-muted font-mono flex items-center gap-1.5" title={tooltip}>
+      <span className="text-green-500/70" title="Input tokens">↓{fmt(tokens.input)}</span>
+      <span className="text-blue-500/70" title="Output tokens">↑{fmt(tokens.output)}</span>
+      {tokens.cached > 0 && <span className="text-amber-500/60" title="Cached tokens">⚡{fmt(tokens.cached)}</span>}
     </span>
   );
 }
@@ -405,7 +407,7 @@ function ConversationWithSidebar({ messages, agents, onSelectAgent }) {
   return (
     <>
       <div className="flex-1 overflow-y-auto scrollbar-thin" ref={containerRef}>
-        <div className="max-w-3xl px-5 py-4 space-y-3">
+        <div className="max-w-4xl mx-auto px-6 py-5 space-y-5">
           {turns.map((turn, i) =>
             turn.type === 'user'
               ? <UserMessage key={i} content={turn.content} id={`turn-${i}`} />
@@ -434,15 +436,16 @@ function Sidebar({ projects, sessions, currentProject, onSelectProject, onSelect
           <div className="px-3 py-2.5 border-b border-border-subtle sticky top-0 bg-surface-1/95 backdrop-blur-sm">
             <h2 className="text-[10px] font-semibold text-text-muted/80 uppercase tracking-wider">Projects</h2>
           </div>
-          <div className="py-0.5">
+          <div className="py-1">
             {projects.map(p => (
               <div
                 key={p.id}
-                className="px-3 py-2 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-blue group"
+                className="px-3 py-2.5 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-blue group"
                 onClick={() => onSelectProject(p.id)}
+                title={p.path}
               >
                 <div className="font-medium text-[13px] text-text-primary truncate group-hover:text-white">{p.name}</div>
-                <div className="text-[11px] text-text-muted/60 truncate mt-0.5 font-mono">{p.path}</div>
+                <div className="text-[10px] text-text-muted truncate mt-1 font-mono" title={p.path}>{p.path}</div>
               </div>
             ))}
           </div>
@@ -453,18 +456,19 @@ function Sidebar({ projects, sessions, currentProject, onSelectProject, onSelect
             <h2 className="text-[10px] font-semibold text-text-muted/80 uppercase tracking-wider">Sessions</h2>
             <button className="text-[11px] text-accent-blue hover:text-white transition-colors" onClick={onBack}>← Back</button>
           </div>
-          <div className="py-0.5">
+          <div className="py-1">
             {sessions.map(s => (
               <div
                 key={s.id}
-                className="px-3 py-2 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-purple group"
+                className="px-3 py-2.5 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-purple group"
                 onClick={() => onSelectSession(s.id)}
+                title={s.summary}
               >
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] text-text-muted/70 font-mono">{formatDate(s.modified)}</span>
-                  <span className="text-[10px] text-text-muted/50 font-mono">{s.messageCount}</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] text-text-muted font-mono">{formatDate(s.modified)}</span>
+                  <span className="text-[10px] text-text-muted/60 font-mono ml-auto bg-surface-2/50 px-1.5 py-0.5 rounded">{s.messageCount} msgs</span>
                 </div>
-                <div className="text-[12px] text-text-secondary line-clamp-2 leading-snug group-hover:text-text-primary">{s.summary}</div>
+                <div className="text-[12px] text-text-secondary line-clamp-2 leading-snug group-hover:text-text-primary truncate" title={s.summary}>{s.summary}</div>
               </div>
             ))}
           </div>
@@ -475,46 +479,47 @@ function Sidebar({ projects, sessions, currentProject, onSelectProject, onSelect
 }
 
 // Right Sidebar Section Components
-function SidebarSection({ title, children, defaultOpen = true }) {
+function SidebarSection({ title, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border-b border-border-subtle/50">
       <button
-        className="w-full px-3 py-2 flex items-center justify-between hover:bg-surface-2/50 transition-colors sticky top-0 bg-surface-1 z-[1]"
+        className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-surface-2/50 transition-colors sticky top-0 bg-surface-1 z-[1]"
         onClick={() => setOpen(!open)}
       >
-        <span className="text-[10px] font-semibold text-text-muted/80 uppercase tracking-wider">{title}</span>
+        <span className="text-[11px] font-semibold text-text-muted">{title}</span>
         <span className="text-[8px] text-text-muted/50">{open ? '▼' : '▶'}</span>
       </button>
-      {open && <div className="px-3 pb-2">{children}</div>}
+      {open && <div className="px-3 pb-3 space-y-2">{children}</div>}
     </div>
   );
 }
 
 function StatsSection({ stats }) {
   const fmt = (n) => n > 1000 ? `${(n / 1000).toFixed(1)}k` : n;
+  const tokenTooltip = `${stats.tokens.input.toLocaleString()} in / ${stats.tokens.output.toLocaleString()} out${stats.tokens.cached > 0 ? ` / ${stats.tokens.cached.toLocaleString()} cached` : ''}`;
   return (
-    <SidebarSection title="Stats">
-      <div className="space-y-1.5 text-[11px] font-mono">
-        <div className="flex justify-between">
-          <span className="text-text-muted/60">Messages</span>
-          <span className="text-text-secondary">{stats.messageCount}</span>
+    <SidebarSection title="Stats" defaultOpen={true}>
+      <div className="bg-surface-2/50 rounded-md p-2.5 space-y-2 text-[11px] font-mono">
+        <div className="flex justify-between items-center">
+          <span className="text-text-muted">Cost</span>
+          <span className="text-text-primary font-semibold text-[12px]">${stats.cost.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted/60">Duration</span>
-          <span className="text-text-secondary">{formatDuration(stats.duration)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted/60">Tokens</span>
+        <div className="flex justify-between items-center" title={tokenTooltip}>
+          <span className="text-text-muted">Tokens</span>
           <span className="flex gap-1.5">
-            <span className="text-green-500/70">↓{fmt(stats.tokens.input)}</span>
-            <span className="text-blue-500/70">↑{fmt(stats.tokens.output)}</span>
-            {stats.tokens.cached > 0 && <span className="text-amber-500/60">⚡{fmt(stats.tokens.cached)}</span>}
+            <span className="text-green-500/80" title="Input">↓{fmt(stats.tokens.input)}</span>
+            <span className="text-blue-500/80" title="Output">↑{fmt(stats.tokens.output)}</span>
+            {stats.tokens.cached > 0 && <span className="text-amber-500/70" title="Cached">⚡{fmt(stats.tokens.cached)}</span>}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted/60">Cost</span>
-          <span className="text-text-secondary">${stats.cost.toFixed(2)}</span>
+        <div className="flex justify-between items-center">
+          <span className="text-text-muted">Messages</span>
+          <span className="text-text-secondary">{stats.messageCount}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-text-muted">Duration</span>
+          <span className="text-text-secondary">{formatDuration(stats.duration)}</span>
         </div>
       </div>
     </SidebarSection>
@@ -530,12 +535,12 @@ function TOCSection({ turns, onScrollTo }) {
   };
 
   return (
-    <SidebarSection title="TOC" defaultOpen={false}>
+    <SidebarSection title="Table of Contents">
       <div className="space-y-0.5 max-h-48 overflow-y-auto scrollbar-thin">
         {userTurns.map((t, i) => (
           <div
             key={i}
-            className="text-[11px] text-text-muted/70 truncate cursor-pointer hover:text-text-primary transition-colors py-0.5"
+            className="text-[10px] text-text-muted truncate cursor-pointer hover:text-text-primary transition-colors py-1 px-1.5 rounded hover:bg-surface-2/50"
             onClick={() => onScrollTo(t.index)}
             title={getText(t.content)}
           >
@@ -580,7 +585,7 @@ function FilesSection({ files }) {
   };
 
   return (
-    <SidebarSection title="Files" defaultOpen={false}>
+    <SidebarSection title="Files Accessed">
       <FileList icon="file-text" label="Read" paths={files.read} />
       <FileList icon="pencil" label="Edit" paths={files.edit} />
       <FileList icon="file-plus" label="Write" paths={files.write} />
@@ -592,17 +597,18 @@ function AgentsSection({ agents, onSelect }) {
   if (!agents || agents.length === 0) return null;
 
   return (
-    <SidebarSection title="Agents">
+    <SidebarSection title="Sub-agents">
       <div className="space-y-0.5 max-h-32 overflow-y-auto scrollbar-thin">
         {agents.map(a => (
           <div
             key={a.id}
-            className="flex items-center gap-1.5 text-[11px] cursor-pointer hover:text-text-primary transition-colors py-0.5"
+            className="flex items-center gap-1.5 text-[10px] cursor-pointer hover:text-text-primary transition-colors py-1 px-1.5 rounded hover:bg-surface-2/50"
             onClick={() => onSelect(a.id)}
-            style={{ paddingLeft: (a.depth || 0) * 8 }}
+            style={{ paddingLeft: (a.depth || 0) * 8 + 6 }}
+            title={a.summary || 'Agent'}
           >
-            <Icon name="bot" size={12} className="text-text-muted/60" />
-            <span className="text-text-muted/70 truncate">{a.summary?.slice(0, 35) || 'Agent'}</span>
+            <Icon name="bot" size={12} className="text-text-muted/70" />
+            <span className="text-text-muted truncate">{a.summary?.slice(0, 35) || 'Agent'}</span>
           </div>
         ))}
       </div>
@@ -618,24 +624,37 @@ function TimelineSection({ turns, onScrollTo }) {
   const maxTokens = Math.max(...tokenCounts, 1);
 
   return (
-    <SidebarSection title="Timeline" defaultOpen={false}>
-      <div className="flex h-6 gap-px rounded overflow-hidden bg-surface-0/50">
-        {turns.map((t, i) => {
-          const intensity = tokenCounts[i] / maxTokens;
-          const opacity = 0.2 + intensity * 0.8;
-          return (
-            <div
-              key={i}
-              className="flex-1 cursor-pointer hover:opacity-100 transition-opacity"
-              style={{
-                backgroundColor: t.type === 'user' ? `rgba(59, 130, 246, ${opacity})` : `rgba(168, 85, 247, ${opacity})`,
-                minWidth: 2
-              }}
-              onClick={() => onScrollTo(i)}
-              title={`Turn ${i + 1}: ${tokenCounts[i]} tokens`}
-            />
-          );
-        })}
+    <SidebarSection title="Timeline">
+      <div className="space-y-2">
+        <div className="flex h-6 gap-px rounded overflow-hidden bg-surface-0/50">
+          {turns.map((t, i) => {
+            const intensity = tokenCounts[i] / maxTokens;
+            const opacity = 0.2 + intensity * 0.8;
+            const hasThinking = t.blocks?.some(b => b.type === 'thinking');
+            const hasTool = t.blocks?.some(b => b.type === 'tool_use');
+            return (
+              <div
+                key={i}
+                className="flex-1 cursor-pointer hover:brightness-125 transition-all"
+                style={{
+                  backgroundColor: t.type === 'user' ? `rgba(59, 130, 246, ${opacity})` :
+                    hasThinking ? `rgba(245, 158, 11, ${opacity})` :
+                    hasTool ? `rgba(34, 197, 94, ${opacity})` :
+                    `rgba(168, 85, 247, ${opacity})`,
+                  minWidth: 2
+                }}
+                onClick={() => onScrollTo(i)}
+                title={`Turn ${i + 1}: ${tokenCounts[i].toLocaleString()} tokens`}
+              />
+            );
+          })}
+        </div>
+        <div className="flex gap-3 text-[9px] text-text-muted">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500/60"></span>user</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-purple-500/60"></span>assistant</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500/60"></span>tool</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500/60"></span>thinking</span>
+        </div>
       </div>
     </SidebarSection>
   );
@@ -646,12 +665,13 @@ function ToolsSection({ tools }) {
   if (entries.length === 0) return null;
 
   return (
-    <SidebarSection title="Tools">
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono">
+    <SidebarSection title="Tools Used">
+      <div className="flex flex-wrap gap-2 text-[10px] font-mono">
         {entries.map(([name, count]) => (
-          <span key={name} className="text-text-muted/70 flex items-center gap-1" title={name}>
-            <Icon name={getToolIcon(name)} size={11} className="text-text-muted/50" />
-            {count}
+          <span key={name} className="text-text-muted flex items-center gap-1 bg-surface-2/50 px-1.5 py-0.5 rounded" title={`${name}: ${count} calls`}>
+            <Icon name={getToolIcon(name)} size={11} className="text-text-muted/70" />
+            <span className="text-text-secondary">{name}</span>
+            <span className="text-text-muted/70">{count}</span>
           </span>
         ))}
       </div>
