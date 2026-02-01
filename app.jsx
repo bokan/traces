@@ -317,10 +317,10 @@ function UserMessage({ content, id }) {
   if (!text.trim()) return null;
 
   return (
-    <div id={id} className="message flex gap-3 py-3 px-3 bg-surface-2/50 rounded-lg">
+    <div id={id} className="message flex gap-3 py-4 px-4 bg-surface-2/50 rounded-lg">
       <Avatar type="user" />
       <div className="flex-1 min-w-0">
-        <MarkdownContent text={text} className="text-text-primary prose prose-invert prose-sm max-w-none font-mono text-[13px] leading-relaxed" />
+        <MarkdownContent text={text} className="text-text-primary prose prose-invert prose-sm max-w-none text-[14px] leading-relaxed" />
       </div>
     </div>
   );
@@ -367,9 +367,9 @@ function AssistantMessage({ blocks, model, usage, id }) {
   }, [blocks]);
 
   return (
-    <div id={id} className="message flex gap-3 py-3 px-3" ref={ref}>
+    <div id={id} className="message flex gap-3 py-4 px-4" ref={ref}>
       <Avatar type="assistant" />
-      <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex-1 min-w-0 space-y-3">
         {/* Model and token info */}
         {(model || usage) && (
           <div className="flex items-center gap-2 mb-1">
@@ -379,14 +379,14 @@ function AssistantMessage({ blocks, model, usage, id }) {
         )}
         {thinkingParts.length > 0 && (
           <Collapsible title="Thinking" icon="💭">
-            <MarkdownContent text={thinkingParts.join('\n\n')} className="text-[12px] opacity-80" />
+            <MarkdownContent text={thinkingParts.join('\n\n')} className="text-[13px] text-text-secondary leading-relaxed" />
           </Collapsible>
         )}
         {textParts.length > 0 && (
-          <MarkdownContent text={textParts.join('\n')} className="text-text-primary prose prose-invert prose-sm max-w-none font-mono text-[13px] leading-relaxed [&_pre]:bg-surface-2 [&_pre]:rounded [&_pre]:p-3 [&_code]:text-[12px]" />
+          <MarkdownContent text={textParts.join('\n')} className="text-text-primary prose prose-invert max-w-none text-[14px] leading-relaxed [&_pre]:bg-surface-2 [&_pre]:rounded [&_pre]:p-3 [&_code]:text-[13px] [&_code]:font-mono" />
         )}
         {toolParts.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-2 mt-3">
             {toolParts.map((tool, i) => <ToolBlock key={tool.id || i} tool={tool} />)}
           </div>
         )}
@@ -430,45 +430,45 @@ function Sidebar({ projects, sessions, currentProject, onSelectProject, onSelect
   const showSessions = currentProject && sessions;
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-surface-1 border-r border-border-subtle flex flex-col overflow-hidden">
+    <aside className="w-72 flex-shrink-0 bg-surface-1 border-r border-border-subtle flex flex-col overflow-hidden">
       {!showSessions ? (
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
-          <div className="px-3 py-2.5 border-b border-border-subtle sticky top-0 bg-surface-1/95 backdrop-blur-sm">
-            <h2 className="text-[10px] font-semibold text-text-muted/80 uppercase tracking-wider">Projects</h2>
+          <div className="px-4 py-3 border-b border-border-subtle sticky top-0 bg-surface-1/95 backdrop-blur-sm">
+            <h2 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Projects</h2>
           </div>
           <div className="py-1">
             {projects.map(p => (
               <div
                 key={p.id}
-                className="px-3 py-2.5 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-blue group"
+                className="px-4 py-3 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-blue group"
                 onClick={() => onSelectProject(p.id)}
                 title={p.path}
               >
-                <div className="font-medium text-[13px] text-text-primary truncate group-hover:text-white">{p.name}</div>
-                <div className="text-[10px] text-text-muted truncate mt-1 font-mono" title={p.path}>{p.path}</div>
+                <div className="font-medium text-[14px] text-text-primary truncate group-hover:text-white">{p.name}</div>
+                <div className="text-[11px] text-text-muted truncate mt-1 font-mono" title={p.path}>{p.path}</div>
               </div>
             ))}
           </div>
         </div>
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
-          <div className="px-3 py-2.5 border-b border-border-subtle flex items-center justify-between sticky top-0 bg-surface-1/95 backdrop-blur-sm z-10">
-            <h2 className="text-[10px] font-semibold text-text-muted/80 uppercase tracking-wider">Sessions</h2>
-            <button className="text-[11px] text-accent-blue hover:text-white transition-colors" onClick={onBack}>← Back</button>
+          <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between sticky top-0 bg-surface-1/95 backdrop-blur-sm z-10">
+            <h2 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Sessions</h2>
+            <button className="text-[12px] text-accent-blue hover:text-white transition-colors font-medium" onClick={onBack}>← Back</button>
           </div>
           <div className="py-1">
             {sessions.map(s => (
               <div
                 key={s.id}
-                className="px-3 py-2.5 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-purple group"
+                className="px-4 py-3 hover:bg-surface-2 cursor-pointer transition-colors border-l-2 border-transparent hover:border-accent-purple group"
                 onClick={() => onSelectSession(s.id)}
                 title={s.summary}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] text-text-muted font-mono">{formatDate(s.modified)}</span>
-                  <span className="text-[10px] text-text-muted/60 font-mono ml-auto bg-surface-2/50 px-1.5 py-0.5 rounded">{s.messageCount} msgs</span>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[11px] text-text-muted font-mono">{formatDate(s.modified)}</span>
+                  <span className="text-[11px] text-text-muted font-mono ml-auto bg-surface-2 px-2 py-0.5 rounded">{s.messageCount} msgs</span>
                 </div>
-                <div className="text-[12px] text-text-secondary line-clamp-2 leading-snug group-hover:text-text-primary truncate" title={s.summary}>{s.summary}</div>
+                <div className="text-[13px] text-text-secondary line-clamp-2 leading-relaxed group-hover:text-text-primary" title={s.summary}>{s.summary}</div>
               </div>
             ))}
           </div>
@@ -482,13 +482,13 @@ function Sidebar({ projects, sessions, currentProject, onSelectProject, onSelect
 function SidebarSection({ title, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-border-subtle/50">
+    <div className="border-b border-border-subtle/60">
       <button
-        className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-surface-2/50 transition-colors sticky top-0 bg-surface-1 z-[1]"
+        className="w-full px-3 py-3 flex items-center justify-between hover:bg-surface-2/50 transition-colors sticky top-0 bg-surface-1 z-[1]"
         onClick={() => setOpen(!open)}
       >
-        <span className="text-[11px] font-semibold text-text-muted">{title}</span>
-        <span className="text-[8px] text-text-muted/50">{open ? '▼' : '▶'}</span>
+        <span className="text-[12px] font-semibold text-text-secondary uppercase tracking-wide">{title}</span>
+        <span className="text-[10px] text-text-muted">{open ? '▼' : '▶'}</span>
       </button>
       {open && <div className="px-3 pb-3 space-y-2">{children}</div>}
     </div>
@@ -500,25 +500,25 @@ function StatsSection({ stats }) {
   const tokenTooltip = `${stats.tokens.input.toLocaleString()} in / ${stats.tokens.output.toLocaleString()} out${stats.tokens.cached > 0 ? ` / ${stats.tokens.cached.toLocaleString()} cached` : ''}`;
   return (
     <SidebarSection title="Stats" defaultOpen={true}>
-      <div className="bg-surface-2/50 rounded-md p-2.5 space-y-2 text-[11px] font-mono">
+      <div className="bg-surface-2 rounded-md p-3 space-y-2.5 text-[12px] font-mono border border-border-subtle">
         <div className="flex justify-between items-center">
-          <span className="text-text-muted">Cost</span>
-          <span className="text-text-primary font-semibold text-[12px]">${stats.cost.toFixed(2)}</span>
+          <span className="text-text-muted font-sans text-[11px]">Cost</span>
+          <span className="text-text-primary font-semibold text-[13px]">${stats.cost.toFixed(2)}</span>
         </div>
         <div className="flex justify-between items-center" title={tokenTooltip}>
-          <span className="text-text-muted">Tokens</span>
+          <span className="text-text-muted font-sans text-[11px]">Tokens</span>
           <span className="flex gap-1.5">
-            <span className="text-green-500/80" title="Input">↓{fmt(stats.tokens.input)}</span>
-            <span className="text-blue-500/80" title="Output">↑{fmt(stats.tokens.output)}</span>
-            {stats.tokens.cached > 0 && <span className="text-amber-500/70" title="Cached">⚡{fmt(stats.tokens.cached)}</span>}
+            <span className="text-green-500" title="Input">↓{fmt(stats.tokens.input)}</span>
+            <span className="text-blue-500" title="Output">↑{fmt(stats.tokens.output)}</span>
+            {stats.tokens.cached > 0 && <span className="text-amber-500" title="Cached">⚡{fmt(stats.tokens.cached)}</span>}
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-text-muted">Messages</span>
+          <span className="text-text-muted font-sans text-[11px]">Messages</span>
           <span className="text-text-secondary">{stats.messageCount}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-text-muted">Duration</span>
+          <span className="text-text-muted font-sans text-[11px]">Duration</span>
           <span className="text-text-secondary">{formatDuration(stats.duration)}</span>
         </div>
       </div>
@@ -789,11 +789,11 @@ function App() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 bg-surface-1 border-b border-border-subtle px-3 py-2 flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-text-primary tracking-tight">Traces</h1>
+      <header className="flex-shrink-0 bg-surface-1 border-b border-border-subtle px-4 py-2.5 flex items-center gap-3">
+        <h1 className="text-[15px] font-semibold text-text-primary tracking-tight">Traces</h1>
         <div className="flex-1" />
         {breadcrumb && (
-          <div className="text-[11px] text-text-muted/70 font-mono">{breadcrumb}</div>
+          <div className="text-[12px] text-text-muted font-mono">{breadcrumb}</div>
         )}
       </header>
 

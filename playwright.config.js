@@ -12,6 +12,16 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
     screenshot: 'on',
   },
+  projects: [
+    {
+      name: 'retina',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 1440, height: 900 },
+        deviceScaleFactor: 2,
+      },
+    },
+  ],
   webServer: {
     command: 'node server.js',
     url: 'http://localhost:3847',
