@@ -617,43 +617,98 @@ function AgentsSection({ agents, onSelect }) {
 }
 
 function TimelineSection({ turns, onScrollTo }) {
-  const tokenCounts = turns.map(t => {
-    if (!t.usage) return 0;
-    return (t.usage.input_tokens || 0) + (t.usage.output_tokens || 0);
+  // Each block gets its own segment so all colors are visible
+  const segments = [];
+  let renderedTurnIndex = 0;
+  
+  turns.forEach((turn) => {
+    if (turn.type === 'user') {
+      let text = '';
+      const content = turn.content;
+      if (typeof content === 'string') text = content;
+      else if (Array.isArray(content)) text = content.filter(c => c.type === 'text').map(c => c.text).join(' ');
+      
+      if (text.trim()) {
+        segments.push({
+          type: 'user',
+          turnIndex: renderedTurnIndex,
+          label: text.slice(0, 40) + (text.length > 40 ? '...' : ''),
+          tokens: 0
+        });
+        renderedTurnIndex++;
+      }
+    } else if (turn.type === 'assistant' && turn.blocks && turn.blocks.length > 0) {
+      // Each block is its own segment
+      turn.blocks.forEach((block) => {
+        let type = 'assistant';
+        let label = '';
+        let tokens = 0;
+        
+        if (block.type === 'thinking') {
+          type = 'thinking';
+          label = 'Thinking';
+          tokens = (turn.usage?.output_tokens || 0) / turn.blocks.length;
+        } else if (block.type === 'tool_use') {
+          type = 'tool';
+          label = `${block.name}: ${block.input?.file_path?.split('/').pop() || block.input?.command?.slice(0, 20) || ''}`;
+          tokens = 50; // Fixed size for tools
+        } else if (block.type === 'text') {
+          type = 'assistant';
+          label = block.text?.slice(0, 40) + (block.text?.length > 40 ? '...' : '') || 'Response';
+          tokens = (turn.usage?.output_tokens || 0) / turn.blocks.length;
+        }
+        
+        segments.push({
+          type,
+          turnIndex: renderedTurnIndex,
+          label,
+          tokens
+        });
+      });
+      renderedTurnIndex++;
+    }
   });
-  const maxTokens = Math.max(...tokenCounts, 1);
+
+  const maxTokens = Math.max(...segments.map(s => s.tokens), 1);
+
+  const colors = {
+    user: { bg: 'bg-blue-500', hex: '#3b82f6' },
+    assistant: { bg: 'bg-purple-500', hex: '#a855f7' },
+    tool: { bg: 'bg-green-500', hex: '#22c55e' },
+    thinking: { bg: 'bg-amber-500', hex: '#f59e0b' }
+  };
 
   return (
-    <SidebarSection title="Timeline">
+    <SidebarSection title="Timeline" defaultOpen={true}>
       <div className="space-y-2">
         <div className="flex h-6 gap-px rounded overflow-hidden bg-surface-0/50">
-          {turns.map((t, i) => {
-            const intensity = tokenCounts[i] / maxTokens;
-            const opacity = 0.2 + intensity * 0.8;
-            const hasThinking = t.blocks?.some(b => b.type === 'thinking');
-            const hasTool = t.blocks?.some(b => b.type === 'tool_use');
+          {segments.map((seg, i) => {
+            const intensity = seg.tokens / maxTokens;
+            const opacity = 0.3 + intensity * 0.7;
+            const color = colors[seg.type].hex;
+            
             return (
               <div
                 key={i}
-                className="flex-1 cursor-pointer hover:brightness-125 transition-all"
+                className="flex-1 cursor-pointer hover:brightness-125 transition-all min-w-[3px]"
                 style={{
-                  backgroundColor: t.type === 'user' ? `rgba(59, 130, 246, ${opacity})` :
-                    hasThinking ? `rgba(245, 158, 11, ${opacity})` :
-                    hasTool ? `rgba(34, 197, 94, ${opacity})` :
-                    `rgba(168, 85, 247, ${opacity})`,
-                  minWidth: 2
+                  backgroundColor: color,
+                  opacity: opacity
                 }}
-                onClick={() => onScrollTo(i)}
-                title={`Turn ${i + 1}: ${tokenCounts[i].toLocaleString()} tokens`}
+                onClick={() => onScrollTo(seg.turnIndex)}
+                title={`${seg.type}: ${seg.label}`}
               />
             );
           })}
         </div>
-        <div className="flex gap-3 text-[9px] text-text-muted">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500/60"></span>user</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-purple-500/60"></span>assistant</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500/60"></span>tool</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500/60"></span>thinking</span>
+        <div className="flex gap-3 text-[9px] text-text-muted flex-wrap">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500"></span>user</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-purple-500"></span>assistant</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500"></span>tool</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500"></span>thinking</span>
+        </div>
+        <div className="text-[10px] text-text-muted/70">
+          {segments.length} segments • {turns.filter(t => t.type === 'user').length} turns
         </div>
       </div>
     </SidebarSection>
